@@ -7,7 +7,7 @@ import Landing from "../Pages/landing/Landing";
 import NewPair from "../Pages/pairs/NewPairs";
 import PnlPage from "../Pages/pnl/page";
 import SettingPage from "../Pages/setting/settings";
-import SwapPage from "../Pages/swap/Swap";
+// import SwapPage from "../Pages/swap/Swap";
 import TradingPage from "../Pages/trading/TradingPage";
 
 
@@ -34,12 +34,12 @@ const appRoutes = [
       </Layout>
     ),
   },
-  {
-    path: "/swap",
-    element: (
-      <SwapPage />
-    ),
-  },
+  // {
+  //   path: "/swap",
+  //   element: (
+  //     <SwapPage />
+  //   ),
+  // },
   {
     path: "/trade",
     element: (
@@ -65,7 +65,7 @@ const appRoutes = [
     ),
   },
   {
-    path: "/coming",
+    path: "/swaps",
     element: (
       <Layout>
         <ComingSoon />

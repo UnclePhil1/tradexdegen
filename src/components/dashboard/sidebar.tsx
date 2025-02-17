@@ -35,8 +35,8 @@ const Sidebar: React.FC = () => {
     },
     {
       icon: LocalAtmIcon,
-      href: "/coming",
-      label: "Analysis",
+      href: "/swaps",
+      label: "Swaps",
       pro: true,
     },
     {

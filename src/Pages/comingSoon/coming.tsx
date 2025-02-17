@@ -1,18 +1,16 @@
-import React from 'react';
-import Navbar from '../../components/dashboard/navbar';
+import React from "react";
+import Navbar from "../../components/dashboard/navbar";
+import { SwapInterface } from "../../components/swaps/swapInterface";
 
 const ComingSoon: React.FC = () => {
-
-    return (
-        <div>
-            <Navbar />
-            <div className='w-full h-screen bg-secondary flex justify-center items-center'>
-                <h1 className='text-5xl text-white text-center mt-20'>
-                    Coming Soon!
-                </h1>
-            </div>
-        </div>
-    )
-}
+  return (
+    <div>
+      <Navbar />
+      <main className="min-h-screen bg-secondary p-4 flex items-center justify-center">
+        <SwapInterface />
+      </main>
+    </div>
+  );
+};
 
 export default ComingSoon;

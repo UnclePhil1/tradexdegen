@@ -25,7 +25,7 @@ const getTokenBalanceAndMintAddress = async (walletAddress: string, mintAddress:
         // Get token account balance
         const tokenAccount = await connection.getParsedAccountInfo(tokenAccountAddress);
         if (!tokenAccount.value) {
-            console.log('Token account does not exist for the specified mint and wallet address');
+            // console.log('Token account does not exist for the specified mint and wallet address');
             return null;
         }
 
