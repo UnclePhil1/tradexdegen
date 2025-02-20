@@ -53,7 +53,7 @@ export default function DemoFund() {
   };
 
   const claim = async () => {
-    const amount = 100;
+    const amount = 500;
     if (!publicKey) {
       alert("Please connect your wallet!");
       return;
