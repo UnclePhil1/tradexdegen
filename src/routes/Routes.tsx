@@ -1,4 +1,5 @@
 import Layout from "../components/dashboard/layout";
+import NotFound from "../not-found";
 import SetBalancePage from "../Pages/balance/funds";
 import ComingSoon from "../Pages/comingSoon/coming";
 import DocsPage from "../Pages/docs/docs";
@@ -10,16 +11,17 @@ import SettingPage from "../Pages/setting/settings";
 // import SwapPage from "../Pages/swap/Swap";
 import TradingPage from "../Pages/trading/TradingPage";
 
-
 const appRoutes = [
   {
-    path: "/",
-    element: (
-      <Landing />
-    ),
+    path: "*",
+    element: <NotFound />,
   },
   {
-    path: "/home",
+    path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/",
     element: (
       <Layout>
         <HomePage />
@@ -88,7 +90,6 @@ const appRoutes = [
       </Layout>
     ),
   },
-
 ];
 
 export default appRoutes;
