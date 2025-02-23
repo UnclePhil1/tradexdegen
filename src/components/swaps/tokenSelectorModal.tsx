@@ -5,6 +5,8 @@ import { Search, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Skeleton } from "../ui/skeleton"
+import { Xdegen_mint } from "../testToken/swapfunction"
+import { xDegen_sol } from "../testToken/tokenBalance"
 
 export interface Tokenn {
   baseToken: {
@@ -41,7 +43,9 @@ export function TokenSelector({ isOpen, onClose, onSelect }: TokenSelectorProps)
         const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=sol/sol")
         const data = await response.json()
         console.log("Data set", data)
-        setTokens(data.pairs || [])
+        const xDegen_SOL = await xDegen_sol()
+        const dataPairs = data.pairs || []
+        setTokens([xDegen_SOL, ...dataPairs])
         setLoading(false)
       } catch (error) {
         console.error("Error fetching tokens:", error)
@@ -119,6 +123,7 @@ export function TokenSelector({ isOpen, onClose, onSelect }: TokenSelectorProps)
           <PopularTokensSkeleton />
         ) : (
           <div className="flex gap-2 overflow-x-auto py-2 no-scrollbar">
+            
             {tokens.slice(0, 4).map((token) => (
               <button
                 key={token.baseToken.address}

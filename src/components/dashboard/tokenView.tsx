@@ -18,6 +18,7 @@ import {
   getMeme,
   getSPLTokenBalance,
   sell,
+  Xdegen_mint,
 } from "../testToken/swapfunction";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
@@ -499,6 +500,7 @@ export default function TradingInterface() {
       const tokenName = pairData.baseToken.symbol;
       const tokenMint = pairData.baseToken.address;
       const buyNow = await buy(
+        Xdegen_mint,
         +orderAmount,
         walletPublicKey,
         tokenName,

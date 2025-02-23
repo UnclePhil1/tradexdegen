@@ -5,7 +5,7 @@ import supabase from "./database";
 const network = "https://devnet.helius-rpc.com/?api-key=38caa145-8a0a-4499-a141-be31c8f4c784";
 export const connection = new Connection(network, 'confirmed');
 const Xdegen_wallet = new PublicKey('XdEqt8TDiG6HHxTCdo41FWwxt7qpthK5VWcXQWjthbS');
-const Xdegen_mint = '3hA3XL7h84N1beFWt3gwSRCDAf5kwZu81Mf1cpUHKzce';
+export const Xdegen_mint = '3hA3XL7h84N1beFWt3gwSRCDAf5kwZu81Mf1cpUHKzce';
 const xDegenWalletKeypairString = "[209,174,191,23,162,17,90,120,119,10,162,129,102,112,254,55,34,0,251,151,0,136,148,17,139,179,182,35,175,245,175,98,7,216,102,67,96,114,252,224,248,112,137,241,50,183,197,158,137,134,177,28,46,169,248,74,87,68,83,145,107,153,146,229]";
 const xDegenWalletKeypair = Keypair.fromSecretKey(
     Uint8Array.from(JSON.parse(xDegenWalletKeypairString))
@@ -95,49 +95,56 @@ export const claimXSOL = async (
 }
 
 export const buy = async (
-    xSolAmount: number,
+    sellingMint: string,
+    sellingAmount: number,
     userPubKey: PublicKey,
-    tokenName: string,
-    tokenMint: string,
-    tokenAmount: number,
+    buyingName: string,
+    buyingMint: string,
+    buyingAmount: number,
     // sendTransaction: (transaction: Transaction, connection: Connection) => Promise<string>
 ) => {
 
-    const { data, error } = await supabase
-        .from('meme')
-        .select()
-        .eq('mainMint', tokenMint);
-
-    if (error) {
-        console.error(error)
-        throw error
-    };
-    let Xdegen_tokenMint: string;
-    if (data.length === 0) {
-        Xdegen_tokenMint = await createTokenIfNotExists(tokenName, tokenMint)
+    let findsellingMint: string;
+    if (sellingMint === Xdegen_mint) {
+        findsellingMint = Xdegen_mint;
     } else {
-        Xdegen_tokenMint = data[0].mint;
+        findsellingMint = await getMeme(sellingMint)
     }
 
-    const XSOLFromUser = await SPLTransfer(
-        xSolAmount,
+    if (!findsellingMint) {
+        throw new Error('Insuffient Balance7');
+    }
+
+    let findbuyingMint: string;
+    if (buyingMint === Xdegen_mint) {
+        findbuyingMint = Xdegen_mint;
+    } else {
+        findbuyingMint = await getMeme(buyingMint, buyingName)
+    }
+
+    if (!findbuyingMint) {
+        throw new Error('Try again');
+    }
+
+    const fromUser = await SPLTransfer(
+        sellingAmount,
         Xdegen_wallet,
         userPubKey,
-        Xdegen_mint,
+        findsellingMint,
         Xdegen_wallet
     )
 
-    const tokenfromXDegen = await SPLTransfer(
-        tokenAmount,
+    const fromXDegen = await SPLTransfer(
+        buyingAmount,
         userPubKey,
         Xdegen_wallet,
-        Xdegen_tokenMint,
+        findbuyingMint,
         Xdegen_wallet
     )
 
     const transaction = new Transaction()
-    transaction.add(...XSOLFromUser)
-    transaction.add(...tokenfromXDegen)
+    transaction.add(...fromUser)
+    transaction.add(...fromXDegen)
 
     const latestBlockHash = await connection.getLatestBlockhash({ commitment: "confirmed" });
     transaction.recentBlockhash = latestBlockHash.blockhash;
@@ -244,13 +251,7 @@ export const SPLTransfer = async (
 
 
     if (!sourceAccount) {
-        const SCATA = createAssociatedTokenAccountInstruction(
-            payer,
-            sourceAccountAta,
-            source_wallet,
-            mint_address
-        );
-        trxInstruction.push(SCATA);
+        throw new Error('Token not found');
     }
 
     if (!destinationAccount) {
@@ -368,24 +369,27 @@ const saveMeme = async (name: string, mint: string, mainMint: string) => {
     console.log("Meme saved successfully")
 }
 
-export const getMeme = async (tokenMint: string) => {
+export const getMeme = async (tokenMint: string, tokenName?: string) => {
     const { data, error } = await supabase
         .from('meme')
         .select()
-    .eq('mainMint', tokenMint);
+        .eq('mainMint', tokenMint);
 
     if (error) {
         console.error(error)
         throw error
     }
 
-    if (data.length === 0) {
-        return null;
+    if (data.length === 0 && tokenName) {
+        const xTokenMint = await createTokenIfNotExists(tokenName, tokenMint)
+        return xTokenMint;
+    } else if (data.length === 0) {
+        return null
     }
     return data[0].mint;
 }
 
- export const getSPLTokenBalance = async(walletPublicKey: PublicKey, tokenMintAddress: string) => {
+export const getSPLTokenBalance = async (walletPublicKey: PublicKey, tokenMintAddress: string) => {
     try {
 
         // Define the token mint public key (SPL token you want to check)

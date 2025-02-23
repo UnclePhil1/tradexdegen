@@ -1,7 +1,8 @@
 import { PublicKey } from '@solana/web3.js';
-import { connection } from './swapfunction';
+import { connection, Xdegen_mint } from './swapfunction';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import supabase from './database';
+import { Tokenn } from '../swaps/tokenSelectorModal';
 
 interface Token {
     name: string;
@@ -64,15 +65,15 @@ export const getTokenPrice = async (mintAddress: string) => {
         const resJson = await res.json();
         // console.log(data, "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
         const price = resJson.pairs[0].priceUsd;
-        const priceChange24h = resJson.pairs[0].priceChange.h24 
+        const priceChange24h = resJson.pairs[0].priceChange.h24
         let imageUrl = "";
         // console.log(`Price for ${mintAddress}: ${resJson.pairs[0].priceUsd}`);
-        if (mintAddress === "So11111111111111111111111111111111111111112"){
+        if (mintAddress === "So11111111111111111111111111111111111111112") {
             imageUrl = '/images/solana.svg'
         } else {
             imageUrl = resJson.pairs[0].info.imageUrl || ""
         }
-        return {price, priceChange24h, imageUrl} ;
+        return { price, priceChange24h, imageUrl };
     } catch (err) {
         console.error('Error fetching token price:', err);
         return null;
@@ -94,11 +95,11 @@ export const getTokens = async (userWalletAddress: string) => {
         const tokenPromises = data.map(async (token) => {
             const balance = await getTokenBalanceAndMintAddress(userWalletAddress, token.mint);
             const price = await getTokenPrice(token.mainMint);
-            
+
             if (balance !== null) {
                 tokens.push({
                     mintAddress: token.mint,
-                    amount: balance.toFixed(4), 
+                    amount: balance.toFixed(4),
                     value: (price?.price * balance).toFixed(2) || "0",
                     name: token.name,
                     symbol: token.name,
@@ -118,6 +119,34 @@ export const getTokens = async (userWalletAddress: string) => {
 
     const totalValue = tokens.reduce((acc, token) => acc + parseFloat(token.value), 0)
     const totalPercentage = tokens.reduce((acc, token) => acc + parseFloat(token.h24), 0)
-// console.log(totalValueInSol, totalPercentage)
-    return {tokens, totalValue, totalValueInSol, totalPercentage};
+    // console.log(totalValueInSol, totalPercentage)
+    return { tokens, totalValue, totalValueInSol, totalPercentage };
 };
+
+
+export const xDegen_sol = async () => {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112`);
+    const resJson = await res.json();
+
+    const price = resJson.pairs[0].priceUsd;
+    const priceChange24h = resJson.pairs[0].priceChange.h24
+
+    return {
+        baseToken: {
+            symbol: "XSOL",
+            address: Xdegen_mint,
+            name: "xDegen SOL",
+        },
+        priceUsd: price,
+        priceNative: price,
+        liquidity: {
+            usd: 100000000,
+        },
+        volume: {
+            h24: priceChange24h
+        },
+        info: {
+            imageUrl: "/images/solana.svg"
+        }
+    }
+}

@@ -65,8 +65,8 @@ export function SwapInterface() {
 
   const [loading, setLoading] = useState(false);
   const [balances, setBalances] = useState({
-    xsol: "0",
-    token: "0",
+    buyingToken: "0",
+    sellingToken: "0",
   });
 
   const { address } = useAppKitAccount();
@@ -80,19 +80,19 @@ export function SwapInterface() {
       try {
         const walletPublicKey = new PublicKey(address);
         const xdegenMint = "3hA3XL7h84N1beFWt3gwSRCDAf5kwZu81Mf1cpUHKzce";
-        const tokenMint = await getMeme(tokenPair.buying.baseToken.address);
+        const buyingTokenMint = tokenPair.buying.baseToken.address == xdegenMint ? xdegenMint : await getMeme(tokenPair.buying.baseToken.address);
+        const sellingTokenMint = tokenPair.selling ? tokenPair.selling.baseToken.address == xdegenMint ? xdegenMint : await getMeme(tokenPair.selling.baseToken.address) : null;
 
-        const xsolBalance = await getSPLTokenBalance(
-          walletPublicKey,
-          xdegenMint
-        );
-        const tokenBalance = tokenMint
-          ? await getSPLTokenBalance(walletPublicKey, tokenMint)
+        const buyingTokenBalance = buyingTokenMint
+          ? await getSPLTokenBalance(walletPublicKey, buyingTokenMint)
+          : "0";
+        const sellingTokenBalance = sellingTokenMint
+          ? await getSPLTokenBalance(walletPublicKey, sellingTokenMint)
           : "0";
 
         setBalances({
-          xsol: xsolBalance || "0",
-          token: tokenBalance,
+          buyingToken: buyingTokenBalance || "0",
+          sellingToken: sellingTokenBalance || "0",
         });
       } catch (error) {
         console.error("Failed to fetch balances:", error);
@@ -129,7 +129,7 @@ export function SwapInterface() {
       }));
       return;
     }
-
+    console.log(tokenPair)
     const sellingPrice = Number.parseFloat(tokenPair.selling.priceNative);
     const buyingPrice = Number.parseFloat(tokenPair.buying.priceNative);
     const inputAmount = Number.parseFloat(amount);
@@ -160,24 +160,19 @@ export function SwapInterface() {
       toast.success("Processing...");
 
       const walletPublicKey = new PublicKey(address);
-      const amount = Number.parseFloat(amounts.selling);
-      const tokenAmount = Number.parseFloat(amounts.buying);
+      const sellingAmount = Number.parseFloat(amounts.selling);
+      const buyingAmount = Number.parseFloat(amounts.buying);
 
-      const transaction =
-        tokenPair.selling.baseToken.symbol === "XSOL"
-          ? await buy(
-              amount,
-              walletPublicKey,
-              tokenPair.buying.baseToken.symbol,
-              tokenPair.buying.baseToken.address,
-              tokenAmount
-            )
-          : await sell(
-              tokenAmount,
-              walletPublicKey,
-              tokenPair.selling.baseToken.address,
-              amount
-            );
+      console.log(tokenPair)
+
+      const transaction = await buy(
+        tokenPair.selling.baseToken.address,
+        sellingAmount,
+        walletPublicKey,
+        tokenPair.buying.baseToken.symbol,
+        tokenPair.buying.baseToken.address,
+        buyingAmount
+      )
 
       const signature = await walletProvider.sendTransaction(
         transaction,
@@ -222,7 +217,7 @@ export function SwapInterface() {
             <div className="flex justify-between mb-2">
               <span className="text-sm text-neutral-400">Selling</span>
               <span className="text-sm text-neutral-400">
-                Balance: {balances.xsol}
+                Balance: {balances.sellingToken}
               </span>
             </div>
             <div className="flex gap-2">
@@ -277,7 +272,7 @@ export function SwapInterface() {
             <div className="flex justify-between mb-2">
               <span className="text-sm text-neutral-400">Buying</span>
               <span className="text-sm text-neutral-400">
-                Balance: {balances.token}
+                Balance: {balances.buyingToken}
               </span>
             </div>
             <div className="flex gap-2">
